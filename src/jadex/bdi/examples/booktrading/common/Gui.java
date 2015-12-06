@@ -33,9 +33,14 @@ public class Gui extends JFrame
 		super((GuiPanel.isBuyer(agent)? "Buyer: ": "Seller: ")+agent.getComponentIdentifier().getName());
 		
 //			System.out.println("booktrading0: "+agent.getComponentIdentifier());
-		GuiPanel gp = new GuiPanel(agent);
-		
-		add(gp, BorderLayout.CENTER);
+		GuiPanel gp;
+		try {
+			gp = new GuiPanel(agent);
+			add(gp, BorderLayout.CENTER);
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		pack();
 		setLocation(SGUI.calculateMiddlePosition(this));
 		setVisible(true);

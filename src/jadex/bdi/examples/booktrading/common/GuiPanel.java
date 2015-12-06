@@ -1,23 +1,5 @@
 package jadex.bdi.examples.booktrading.common;
 
-import jadex.bdi.runtime.AgentEvent;
-import jadex.bdi.runtime.IBDIExternalAccess;
-import jadex.bdi.runtime.IBDIInternalAccess;
-import jadex.bdi.runtime.IBeliefSetListener;
-import jadex.bdi.runtime.IExpression;
-import jadex.bdi.runtime.IGoal;
-import jadex.bridge.IComponentStep;
-import jadex.bridge.IExternalAccess;
-import jadex.bridge.IInternalAccess;
-import jadex.bridge.service.types.clock.IClockService;
-import jadex.commons.future.IFuture;
-import jadex.commons.future.IResultListener;
-import jadex.commons.gui.SGUI;
-import jadex.commons.gui.future.SwingResultListener;
-import jadex.commons.gui.future.SwingDefaultResultListener;
-import jadex.commons.transformation.annotations.Classname;
-import jadex.micro.annotation.Binding;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -58,6 +40,25 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+
+import jadex.bdi.examples.booktrading.common.utils.AgentConfigurationResolver;
+import jadex.bdi.runtime.AgentEvent;
+import jadex.bdi.runtime.IBDIExternalAccess;
+import jadex.bdi.runtime.IBDIInternalAccess;
+import jadex.bdi.runtime.IBeliefSetListener;
+import jadex.bdi.runtime.IExpression;
+import jadex.bdi.runtime.IGoal;
+import jadex.bridge.IComponentStep;
+import jadex.bridge.IExternalAccess;
+import jadex.bridge.IInternalAccess;
+import jadex.bridge.service.types.clock.IClockService;
+import jadex.commons.future.IFuture;
+import jadex.commons.future.IResultListener;
+import jadex.commons.gui.SGUI;
+import jadex.commons.gui.future.SwingDefaultResultListener;
+import jadex.commons.gui.future.SwingResultListener;
+import jadex.commons.transformation.annotations.Classname;
+import jadex.micro.annotation.Binding;
 
 /**
  *  The gui allows to add and delete buy or sell orders and shows open and
@@ -156,27 +157,22 @@ public class GuiPanel extends JPanel
 
 	/**
 	 *  Shows the gui, and updates it when beliefs change.
+	 * @throws ClassNotFoundException 
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
 	 */
-	public GuiPanel(final IBDIExternalAccess agent)//, final boolean buy)
+	public GuiPanel(final IBDIExternalAccess agent) throws InstantiationException, IllegalAccessException, ClassNotFoundException//, final boolean buy)
 	{
 		setLayout(new BorderLayout());
 		
 		this.agent = agent;
-		final boolean buy = isBuyer(agent);
 		
-		if(buy)
-		{
-			itemlabel = " Books to buy ";
-			goalname = "purchase_book";
-			addorderlabel = "Add new purchase order";
-		}
-		else
-		{
-			itemlabel = " Books to sell ";
-			goalname = "sell_book";
-			addorderlabel = "Add new sell order";
-		}
-
+		AgentConfigurationResolver configurationResolver = (AgentConfigurationResolver) Class.forName("jadex.bdi.examples.booktrading.common.utils."+agent.getModel().getName()+"ConfigurationResolver").newInstance();
+	
+		itemlabel = configurationResolver.getItemLabel();
+		goalname = configurationResolver.getGoalName();
+		addorderlabel = configurationResolver.getAddOrderLabel();
+		
 		JPanel itempanel = new JPanel(new BorderLayout());
 		itempanel.setBorder(new TitledBorder(new EtchedBorder(), itemlabel));
 
@@ -362,7 +358,7 @@ public class GuiPanel extends JPanel
 			}
 		} );
 		
-		final InputDialog dia = new InputDialog(buy);
+		final InputDialog dia = new InputDialog(configurationResolver);
 		
 		add.addActionListener(new ActionListener()
 		{
@@ -386,7 +382,7 @@ public class GuiPanel extends JPanel
 										int limit = Integer.parseInt(dia.limit.getText());
 										int start = Integer.parseInt(dia.start.getText());
 										Date deadline = dformat.parse(dia.deadline.getText());
-										final Order order = new Order(title, deadline, start, limit, buy, cs);
+										final Order order = new Order(title, deadline, start, limit, configurationResolver.isBuyer(), cs);
 										
 										agent.scheduleStep(new IComponentStep<Void>()
 										{
@@ -501,7 +497,7 @@ public class GuiPanel extends JPanel
 			}
 		});
 
-		final InputDialog edit_dialog = new InputDialog(buy);
+		final InputDialog edit_dialog = new InputDialog(configurationResolver);
 		edit.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -767,7 +763,7 @@ public class GuiPanel extends JPanel
 		private boolean aborted;
 		private Exception e;
 
-		InputDialog(final boolean buy)
+		InputDialog(AgentConfigurationResolver configurationResolver)
 		{
 			super(getFrame(), addorderlabel, true);
 
@@ -780,21 +776,14 @@ public class GuiPanel extends JPanel
 					ia.getServiceContainer().searchService(IClockService.class, Binding.SCOPE_PLATFORM)
 						.addResultListener(new SwingResultListener<IClockService>(new IResultListener<IClockService>()
 					{
+						@SuppressWarnings("unchecked")
 						public void resultAvailable(IClockService clock)
 						{
-							if(buy)
-							{
-								orders.addItem(new Order("All about agents", null, 100, 120, buy, clock));
-								orders.addItem(new Order("All about web services", null, 40, 60, buy, clock));
-								orders.addItem(new Order("Harry Potter", null, 5, 10, buy, clock));
-								orders.addItem(new Order("Agents in the real world", null, 30, 65, buy, clock));
-							}
-							else
-							{
-								orders.addItem(new Order("All about agents", null, 130, 110, buy, clock));
-								orders.addItem(new Order("All about web services", null, 50, 30, buy, clock));
-								orders.addItem(new Order("Harry Potter", null, 15, 9, buy, clock));
-								orders.addItem(new Order("Agents in the real world", null, 100, 60, buy, clock));
+
+							configurationResolver.setUpOrders(clock);
+							
+							for (Order order : configurationResolver.getOrders()) {
+								orders.addItem(order);
 							}
 							
 							JPanel center = new JPanel(new GridBagLayout());

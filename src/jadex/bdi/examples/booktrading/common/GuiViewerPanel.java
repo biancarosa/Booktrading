@@ -36,7 +36,12 @@ public class GuiViewerPanel extends AbstractComponentViewerPanel
 		{
 			public void resultAvailable(Void result)
 			{
-				panel = new GuiPanel((IBDIExternalAccess)component);
+				try {
+					panel = new GuiPanel((IBDIExternalAccess)component);
+				} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				ret.setResult(result);
 			}
 			
