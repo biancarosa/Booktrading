@@ -24,6 +24,7 @@
 	<componenttypes>
 		<componenttype name="Buyer" filename="jadex/bdi/examples/booktrading/buyer/Buyer.agent.xml"/>
 		<componenttype name="Seller" filename="jadex/bdi/examples/booktrading/seller/Seller.agent.xml"/>
+		<componenttype name="DealProposer" filename="jadex/bdi/examples/booktrading/seller/DealProposer.agent.xml"/>
 	</componenttypes>
 	
 	<properties>
@@ -61,6 +62,14 @@
 						</argument>
 					</arguments>
 				</component>
+				<component type="DealProposer">
+					<arguments>
+						<argument name="deals">
+						</argument>
+					</arguments>
+				</component>
+				
+				
 			</components>
 		</configuration>
 		<configuration name="One buyer and one seller (one order)">

@@ -21,7 +21,7 @@ public class SellerConfigurationResolver extends AgentConfigurationResolver {
 		orders.add(new Order("All about agents", null, 130, 110, false, clock));
 		orders.add(new Order("All about web services", null, 50, 30, false, clock));
 		orders.add(new Order("Harry Potter", null, 15, 9, false, clock));
-		orders.add(new Order("Agents in the real world", null, 100, 60, false, clock));
+		orders.add(new Order("Agents asdan the real world", null, 100, 60, false, clock));
 	
 		this.setOrders(orders);
 	}

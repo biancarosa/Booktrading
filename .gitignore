@@ -1,3 +1,4 @@
 b-note.settings.xml
 jcc.settings.xml
 *.class
+/bin/
